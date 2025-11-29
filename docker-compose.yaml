@@ -1,0 +1,50 @@
+services:
+  app:
+    container_name: admin_app
+    image: admin-app:1.0.0
+    build:
+      context: ./admin-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./admin-app/foundation/env/.env
+    volumes:
+      - ./admin-app:/app
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    image: user-db:1.0.0
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    privileged: true
+    container_name: mariadb
+    restart: unless-stopped
+    env_file:
+      - ./db/.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/migration:/docker-entrypoint-initdb.d
+      - ./db/data:/var/lib/mysql
+
+
+  # flyway:
+  #   image: flyway/flyway:10
+  #   container_name: flyway_migration
+  #   depends_on:
+  #     - db
+  #   command: >
+  #     -url=jdbc:mariadb://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+  #     -user=${MYSQL_USER}
+  #     -password=${MYSQL_PASSWORD}
+  #     -connectRetries=10
+  #     migrate
+  #   volumes:
+  #     - ./db/migration:/flyway/sql
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
