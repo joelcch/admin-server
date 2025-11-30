@@ -1,7 +1,10 @@
-create table if not exists teacher_student_map (
-    teacher_id UUID not null references teachers(id),
-    student_id UUID references students(id),
-    is_deleted boolean default false,
-    primary key (teacher_id, student_id, is_deleted)
+CREATE TABLE IF NOT EXISTS teacher_student_map (,
+    teacher_email VARCHAR(150) NOT NULL,
+    student_email VARCHAR(150) NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (teacher_email, student_email),
+    INDEX idx_student_email (student_email),
+    INDEX idx_teacher_email_deleted (teacher_email, is_deleted),
+    CONSTRAINT fk_teacher FOREIGN KEY (teacher_email) REFERENCES teachers(email),
+    CONSTRAINT fk_student FOREIGN KEY (student_email) REFERENCES students(email)
 );
-create index if not exists idx_teacher_student_map on teacher_student_map(teacher_id, student_id, is_deleted);

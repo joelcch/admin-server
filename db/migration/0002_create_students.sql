@@ -1,9 +1,9 @@
-create table if not exists students (
-    id UUID primary key default UUID(),
-    email varchar(150) not null unique,
-    is_deleted boolean default false,
-    is_suspended boolean default false,
-    created_at timestamp default current_timestamp,
-    updated_at timestamp default current_timestamp
+CREATE TABLE IF NOT EXISTS students (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(150) NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    is_suspended BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_students_email(email)
 );
-create index if not exists idx_students_email on students(id, email, is_deleted);

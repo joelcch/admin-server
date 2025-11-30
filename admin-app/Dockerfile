@@ -21,4 +21,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
 # Command to run the application
-CMD ["node", "app.js"]
+CMD ["node", "server.js"]
