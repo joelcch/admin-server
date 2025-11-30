@@ -30,7 +30,6 @@ const userBus = (store) => {
         try {
             return await userStore.getTeacherIdByEmail(email);
         } catch (err) {
-            console.error('Error in getTeacherIdByEmail:', err);
             throw err;
         }
     }
@@ -39,25 +38,20 @@ const userBus = (store) => {
         // Try to register the teacher, if duplicate means teacher already exists
         try {
             await userStore.registerTeacher(teacherEmail);
-            console.log(`Registered teacher: ${teacherEmail}`);
         } catch (err) {
             if (!(err instanceof DuplicateEntryError)) {
                 throw err;
             }
-            console.log(`Teacher already exists: ${teacherEmail}`);
         }
 
-        // Assign each student to the teacher
-        for (const studentEmail of studentEmails) {
+        const studentPromises = studentEmails.map(async (studentEmail) => {
             // Try to register the student, if duplicate means student already exists
             try {
                 await userStore.registerStudent(studentEmail);
-                console.log(`Registered student: ${studentEmail}`);
             } catch (err) {
                 if (!(err instanceof DuplicateEntryError)) {
                     throw err;
                 }
-                console.log(`Student already exists: ${studentEmail}`);
             }
             
             // Assign student to teacher
@@ -67,23 +61,22 @@ const userBus = (store) => {
                 if (!(err instanceof DuplicateEntryError)) {
                     throw err;
                 }
-                console.log(`Student ${studentEmail} already assigned to teacher ${teacherEmail}`);
             }
-        }
+        });
+
+        await Promise.all(studentPromises);
     }
 
     const getCommonStudentsFromTeachers = async (teacherEmails) => {
         let invalidEmails = [];
         try {
+            const teacherRecords = await userStore.getTeacherIdsByEmails(teacherEmails);
+            const existingEmails = teacherRecords.map(record => record.email);
+
+            // Identify invalid emails
             for (const email of teacherEmails) {
-                try {
-                    const teacher_id = await userStore.getTeacherIdByEmail(email);
-                    if (!teacher_id) {
-                        invalidEmails.push(email);
-                        continue;
-                    }
-                } catch (err) {
-                    throw err;
+                if (!existingEmails.includes(email)) {
+                    invalidEmails.push(email);
                 }
             }
             if (invalidEmails.length > 0) {
@@ -91,7 +84,6 @@ const userBus = (store) => {
             }
             return await userStore.getCommonStudentsByTeacherIds(teacherEmails);
         } catch (err) {
-            console.error('Error in getCommonStudentsFromTeachers:', err);
             throw err;
         }
     }
@@ -108,7 +100,6 @@ const userBus = (store) => {
         try {
             await userStore.suspendStudentByEmail(email);
         } catch (err) {
-            console.error('Error in suspendStudent:', err);
             throw err;
         }
     }
@@ -117,7 +108,6 @@ const userBus = (store) => {
         try {
             return await userStore.getNotifiableStudentsByTeacherEmailAndMentions(teacherEmail, mentionedStudents);
         } catch (err) {
-            console.error('Error in getNotifiableStudents:', err);
             throw err;
         }
     }

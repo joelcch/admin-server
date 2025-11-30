@@ -7,6 +7,7 @@ const {
     GET_COMMON_STUDENTS_BY_TEACHER_EMAILS,
     SUSPEND_STUDENT_BY_EMAIL,
     GET_NOTIFIABLE_STUDENTS_BY_TEACHER_EMAIL,
+    GET_TEACHERS_ID_BY_EMAILS,
 } = require('./queries');
 
 const { DuplicateEntryError } = require('./errors');
@@ -119,6 +120,12 @@ const userStore = (dbConnection) => {
         }
     }
 
+    // Get teacher ID by emails
+    const getTeacherIdsByEmails = async (emails) => {
+        const [rows] = await db.query(GET_TEACHERS_ID_BY_EMAILS, [emails]);
+        return rows;
+    }
+
     return {
         registerTeacher,
         registerStudent,
@@ -128,6 +135,7 @@ const userStore = (dbConnection) => {
         getCommonStudentsByTeacherIds,
         suspendStudentByEmail,
         getNotifiableStudentsByTeacherEmailAndMentions,
+        getTeacherIdsByEmails,
     }
 }
 

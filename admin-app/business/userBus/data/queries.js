@@ -12,6 +12,11 @@ const GET_COMMON_STUDENTS_BY_TEACHER_EMAILS = `
     GROUP BY student_email
     HAVING COUNT(DISTINCT teacher_email) = ?;
 `
+const GET_TEACHERS_ID_BY_EMAILS = `
+    SELECT id, email
+    FROM teachers
+    WHERE email IN (?);
+`
 
 const SUSPEND_STUDENT_BY_EMAIL = `
     UPDATE students
@@ -35,6 +40,7 @@ module.exports = {
     INSERT_TEACHER,
     INSERT_STUDENT,
     INSERT_TEACHER_STUDENT_MAP,
+    GET_TEACHERS_ID_BY_EMAILS,
     GET_TEACHER_ID_BY_EMAIL,
     GET_STUDENT_ID_BY_EMAIL,
     GET_COMMON_STUDENTS_BY_TEACHER_EMAILS,

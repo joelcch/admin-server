@@ -13,14 +13,9 @@ const userApp = (router, userBus) => {
     });
 
     router.get('/api/commonstudents', async (req, res) => {
-        const teacherEmails = req.query.teacher;
+        const teacherEmails = [].concat(req.query.teacher);
         try {
-            // Format the emails
-            let formattedTeacherEmails = [];
-            for (const email of teacherEmails) {
-                formattedTeacherEmails.push(email.replace('%40', '@'));
-            }
-            const commonStudents = await userBus.getCommonStudentsFromTeachers(formattedTeacherEmails);
+            const commonStudents = await userBus.getCommonStudentsFromTeachers(teacherEmails);
             res.status(200).json({ students: commonStudents });
         } catch (error) {
             if (error instanceof UserDoesNotExistError) {
@@ -107,11 +102,13 @@ const userApp = (router, userBus) => {
     });
 
     function extractMentionedStudents(notification) {
-        const words = notification.split(' ');
-        const mentionedStudents = words
-            .filter(word => word.startsWith('@'))
-            .map(word => word.substring(1)); // Remove '@' character
-        return mentionedStudents ? mentionedStudents : [];
+        const emailRegex = /@([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+        const mentionedStudents = [];
+        let match;
+        while ((match = emailRegex.exec(notification)) !== null) {
+            mentionedStudents.push(match[1]); // match[1] contains the captured email address
+        }
+        return mentionedStudents;
     }
 }
 
