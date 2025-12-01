@@ -1,5 +1,5 @@
-const { DuplicateUserError, UserDoesNotExistError } = require('./errors');
-const { DuplicateEntryError } = require('./data/errors');
+const { DuplicateUserError, UserDoesNotExistError, AuthenticationError } = require('./errors');
+const { DuplicateEntryError, InvalidCredentialsError } = require('./data/errors');
 
 const userBus = (store) => {
     const userStore = store;
@@ -10,6 +10,9 @@ const userBus = (store) => {
         } catch (err) {
             if (err instanceof DuplicateEntryError) {
                 throw new DuplicateUserError();
+            }
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
             }
             throw err;
         }
@@ -22,6 +25,9 @@ const userBus = (store) => {
             if (err instanceof DuplicateEntryError) {
                 throw new DuplicateUserError();
             }
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
+            }
             throw err;
         }
     }
@@ -30,6 +36,9 @@ const userBus = (store) => {
         try {
             return await userStore.getTeacherIdByEmail(email);
         } catch (err) {
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
+            }
             throw err;
         }
     }
@@ -42,6 +51,9 @@ const userBus = (store) => {
             if (!(err instanceof DuplicateEntryError)) {
                 throw err;
             }
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
+            }
         }
 
         const studentPromises = studentEmails.map(async (studentEmail) => {
@@ -52,6 +64,9 @@ const userBus = (store) => {
                 if (!(err instanceof DuplicateEntryError)) {
                     throw err;
                 }
+                if (err instanceof InvalidCredentialsError) {
+                    throw new AuthenticationError();
+                }
             }
             
             // Assign student to teacher
@@ -60,6 +75,9 @@ const userBus = (store) => {
             } catch (err) {
                 if (!(err instanceof DuplicateEntryError)) {
                     throw err;
+                }
+                if (err instanceof InvalidCredentialsError) {
+                    throw new AuthenticationError();
                 }
             }
         });
@@ -84,6 +102,9 @@ const userBus = (store) => {
             }
             return await userStore.getCommonStudentsByTeacherIds(teacherEmails);
         } catch (err) {
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
+            }
             throw err;
         }
     }
@@ -100,6 +121,9 @@ const userBus = (store) => {
         try {
             await userStore.suspendStudentByEmail(email);
         } catch (err) {
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
+            }
             throw err;
         }
     }
@@ -108,6 +132,9 @@ const userBus = (store) => {
         try {
             return await userStore.getNotifiableStudentsByTeacherEmailAndMentions(teacherEmail, mentionedStudents);
         } catch (err) {
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
+            }
             throw err;
         }
     }

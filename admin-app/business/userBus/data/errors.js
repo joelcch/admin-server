@@ -1,4 +1,4 @@
-class DbError extends Error {
+class StoreError extends Error {
     constructor(message, statusCode) {
         super(message);
         this.statusCode = statusCode;
@@ -9,13 +9,20 @@ class DbError extends Error {
     }
 }
 
-class DuplicateEntryError extends DbError {
+class DuplicateEntryError extends StoreError {
     constructor(message) {
         super(message || 'duplicate entry error', 409); // 409 Conflict
     }
 }
 
+class InvalidCredentialsError extends StoreError {
+    constructor(message) {
+        super(message || 'invalid credentials', 401); // 401 Unauthorized
+    }
+}
+
 module.exports = {
-    DbError,
+    StoreError,
     DuplicateEntryError,
+    InvalidCredentialsError,
 };

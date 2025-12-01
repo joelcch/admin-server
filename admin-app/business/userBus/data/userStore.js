@@ -10,7 +10,7 @@ const {
     GET_TEACHERS_ID_BY_EMAILS,
 } = require('./queries');
 
-const { DuplicateEntryError } = require('./errors');
+const { DuplicateEntryError, InvalidCredentialsError } = require('./errors');
 
 const userStore = (dbConnection) => {
     const db = dbConnection;
@@ -27,6 +27,9 @@ const userStore = (dbConnection) => {
         } catch (err) {
             if (err.code === 'ER_DUP_ENTRY') {
                 throw new DuplicateEntryError();
+            }
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
             }
             throw err;
         }
@@ -45,6 +48,9 @@ const userStore = (dbConnection) => {
             if (err.code === 'ER_DUP_ENTRY') {
                 throw new DuplicateEntryError();
             }
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
             throw err;
         }
     }
@@ -62,6 +68,9 @@ const userStore = (dbConnection) => {
             if (err.code === 'ER_DUP_ENTRY') {
                 throw new DuplicateEntryError();
             }
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
             throw err;
         }
     }
@@ -69,31 +78,46 @@ const userStore = (dbConnection) => {
     // Get the ID of a teacher by email
     // Returns null if the teacher does not exist
     const getTeacherIdByEmail = async (email) => {
-        const [rows] = await db.query(GET_TEACHER_ID_BY_EMAIL, [email]);
-        if (rows.length === 0) {
+        try {
+            const [rows] = await db.query(GET_TEACHER_ID_BY_EMAIL, [email]);
+            if (rows.length === 0) {
             return null;
         }
         return rows[0].id;
+        } catch (err) {
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
     }
 
     // Get the ID of a teacher by email
     // Returns null if the teacher does not exist
     const getStudentIdByEmail = async (email) => {
-        const [rows] = await db.query(GET_STUDENT_ID_BY_EMAIL, [email]);
-        if (rows.length === 0) {
+        try {
+            const [rows] = await db.query(GET_STUDENT_ID_BY_EMAIL, [email]);
+            if (rows.length === 0) {
             return null;
         }
         return rows[0].id;
+        } catch (err) {
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
+            throw err;
+        }    
     }
 
     // Get list of students common to given teachers
     const getCommonStudentsByTeacherIds = async (teacherIds) => {
         try {
             const [rows] = await db.query(GET_COMMON_STUDENTS_BY_TEACHER_EMAILS, [teacherIds, teacherIds.length]);
-            console.log('Common students rows:', rows);
             return rows.map(row => row.student_email);    
         } catch (err) {
-            console.error('Error when getting common students:', err);
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
             throw err;
         }
     }
@@ -103,7 +127,9 @@ const userStore = (dbConnection) => {
         try {
             await db.query(SUSPEND_STUDENT_BY_EMAIL, [email]);
         } catch (err) {
-            console.error('Error when suspending student:', err);
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
             throw err;
         }
     }
@@ -115,15 +141,24 @@ const userStore = (dbConnection) => {
             const [rows] = await db.query(GET_NOTIFIABLE_STUDENTS_BY_TEACHER_EMAIL, [teacherEmail, studentsToQuery]);
             return rows.map(row => row.student_email);
         } catch (err) {
-            console.error('Error when getting notifiable students:', err);
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
             throw err;
         }
     }
 
     // Get teacher ID by emails
     const getTeacherIdsByEmails = async (emails) => {
-        const [rows] = await db.query(GET_TEACHERS_ID_BY_EMAILS, [emails]);
-        return rows;
+        try {
+            const [rows] = await db.query(GET_TEACHERS_ID_BY_EMAILS, [emails]);
+            return rows;
+        } catch (err) {
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
     }
 
     return {
