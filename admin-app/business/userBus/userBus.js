@@ -17,33 +17,30 @@ const userBus = (store) => {
             }
         }
 
-        const studentPromises = studentEmails.map(async (studentEmail) => {
-            // Try to register the student, if duplicate means student already exists
-            try {
-                await userStore.registerStudent(studentEmail);
-            } catch (err) {
-                if (err instanceof InvalidCredentialsError) {
-                    throw new AuthenticationError();
-                }
-                if (!(err instanceof DuplicateEntryError)) {
-                    throw err;
-                }
+        // Bulk register all students
+        // Skip if no students provided
+        if (studentEmails.length === 0) {
+            return;
+        }
+        
+        try {
+            await userStore.registerStudentsBulk(studentEmails);
+        } catch (err) {
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
             }
+            throw err;
+        }
             
-            // Assign student to teacher
-            try {
-                await userStore.assignStudentToTeacher(teacherEmail, studentEmail);
-            } catch (err) {
-                if (err instanceof InvalidCredentialsError) {
-                    throw new AuthenticationError();
-                }
-                if (!(err instanceof DuplicateEntryError)) {
-                    throw err;
-                }
+        // Assign all students to teacher in bulk (ignores duplicates)
+        try {
+            await userStore.assignStudentsToTeacherBulk(teacherEmail, studentEmails);
+        } catch (err) {
+            if (err instanceof InvalidCredentialsError) {
+                throw new AuthenticationError();
             }
-        });
-
-        await Promise.all(studentPromises);
+            throw err;
+        }
     }
 
     const getCommonStudentsFromTeachers = async (teacherEmails) => {

@@ -29,8 +29,10 @@ describe('userBus', () => {
     mockStore = {
       registerTeacher: jest.fn(),
       registerStudent: jest.fn(),
+      registerStudentsBulk: jest.fn(),
       getTeacherIdByEmail: jest.fn(),
       assignStudentToTeacher: jest.fn(),
+      assignStudentsToTeacherBulk: jest.fn(),
       getTeachersByEmails: jest.fn(),
       getCommonStudentsByTeacherEmails: jest.fn(),
       getStudentIdByEmail: jest.fn(),
@@ -49,54 +51,22 @@ describe('userBus', () => {
 
   describe('registerTeacherStudentMap', () => {
     const teacherEmail = 'teacher@example.com';
-    const studentEmail1 = 'student1@example.com'
-    const studentEmail2 = 'student2@example.com'
-    const studentEmails = [studentEmail1, studentEmail2];
+    const studentEmails = ['student1@example.com', 'student2@example.com'];
 
     const scenarios = [
       {
-        desc: 'when new teacher and students should register all and assign and return no error',
+        desc: 'should register teacher, students, and assign them',
         setup: () => {},
         assertions: () => {
           expect(mockStore.registerTeacher).toHaveBeenCalledWith(teacherEmail);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail1);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail2);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail1);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail2);
+          expect(mockStore.registerStudentsBulk).toHaveBeenCalledWith(studentEmails);
+          expect(mockStore.assignStudentsToTeacherBulk).toHaveBeenCalledWith(teacherEmail, studentEmails);
         }
       },
       {
-        desc: 'when teacher exists should ignore DuplicateEntryError and register students and assign',
+        desc: 'should ignore DuplicateEntryError for teacher registration',
         setup: () => mockStore.registerTeacher.mockRejectedValue(new DuplicateEntryError()),
-        assertions: () => {
-          expect(mockStore.registerTeacher).toHaveBeenCalledWith(teacherEmail);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail1);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail2);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail1);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail2);
-        }
-      },
-      {
-        desc: 'when student exists should ignore DuplicateEntryError for that student and assign',
-        setup: () => mockStore.registerStudent.mockRejectedValue(new DuplicateEntryError()),
-        assertions: () => {
-          expect(mockStore.registerTeacher).toHaveBeenCalledWith(teacherEmail);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail1);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail2);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail1);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail2);
-        }
-      },
-      {
-        desc: 'when student-teacher assignment exists should ignore DuplicateEntryError',
-        setup: () => mockStore.assignStudentToTeacher.mockRejectedValue(new DuplicateEntryError()),
-        assertions: () => {
-          expect(mockStore.registerTeacher).toHaveBeenCalledWith(teacherEmail);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail1);
-          expect(mockStore.registerStudent).toHaveBeenCalledWith(studentEmail2);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail1);
-          expect(mockStore.assignStudentToTeacher).toHaveBeenCalledWith(teacherEmail, studentEmail2);
-        }
+        assertions: () => expect(mockStore.registerStudentsBulk).toHaveBeenCalled()
       },
       {
         desc: 'should rethrow other errors from teacher registration',
@@ -104,8 +74,13 @@ describe('userBus', () => {
         expectedError: genericError
       },
       {
-        desc: 'should rethrow other errors from student registration',
-        setup: () => mockStore.registerStudent.mockRejectedValue(genericError),
+        desc: 'should rethrow other errors from student bulk registration',
+        setup: () => mockStore.registerStudentsBulk.mockRejectedValue(genericError),
+        expectedError: genericError
+      },
+      {
+        desc: 'should rethrow other errors from assignment bulk',
+        setup: () => mockStore.assignStudentsToTeacherBulk.mockRejectedValue(genericError),
         expectedError: genericError
       }
     ];

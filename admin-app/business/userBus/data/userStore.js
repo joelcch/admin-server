@@ -1,7 +1,9 @@
 const {
     INSERT_TEACHER,
     INSERT_STUDENT,
+    INSERT_STUDENTS_BULK,
     INSERT_TEACHER_STUDENT_MAP,
+    INSERT_TEACHER_STUDENT_MAP_BULK,
     GET_STUDENT_ID_BY_EMAIL,
     GET_COMMON_STUDENTS_BY_TEACHER_EMAILS,
     SUSPEND_STUDENT_BY_EMAIL,
@@ -73,6 +75,31 @@ const userStore = (dbConnection) => {
             throw err;
         }
     }
+
+    const registerStudentsBulk = async (emails) => {
+        const values = emails.map(email => [email]);
+        try {
+            await db.query(INSERT_STUDENTS_BULK, [values]);
+        } catch (err) {
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
+    }
+
+    const assignStudentsToTeacherBulk = async (teacherEmail, studentEmails) => {
+        const values = studentEmails.map(studentEmail => [teacherEmail, studentEmail]);
+        try {
+            await db.query(INSERT_TEACHER_STUDENT_MAP_BULK, [values]);
+        } catch (err) {
+            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
+                throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
+    }
+
 
     // Get the ID of a teacher by email
     // Returns null if the teacher does not exist
@@ -146,7 +173,9 @@ const userStore = (dbConnection) => {
     return {
         registerTeacher,
         registerStudent,
+        registerStudentsBulk,
         assignStudentToTeacher,
+        assignStudentsToTeacherBulk,
         getStudentIdByEmail,
         getCommonStudentsByTeacherEmails,
         suspendStudentByEmail,

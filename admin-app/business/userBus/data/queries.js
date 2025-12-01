@@ -1,6 +1,8 @@
 const INSERT_TEACHER = 'INSERT INTO teachers (email) VALUES (?)';
 const INSERT_STUDENT = 'INSERT INTO students (email) VALUES (?)';
+const INSERT_STUDENTS_BULK = 'INSERT IGNORE INTO students (email) VALUES ?';
 const INSERT_TEACHER_STUDENT_MAP = 'INSERT INTO teacher_student_map (teacher_email, student_email) VALUES (?, ?)';
+const INSERT_TEACHER_STUDENT_MAP_BULK = 'INSERT IGNORE INTO teacher_student_map (teacher_email, student_email) VALUES ?';
 
 // const GET_TEACHER_ID_BY_EMAIL = 'SELECT id FROM teachers WHERE email = ? and is_deleted = false';
 const GET_STUDENT_ID_BY_EMAIL = 'SELECT id FROM students WHERE email = ? AND is_deleted = false';
@@ -39,7 +41,9 @@ const GET_NOTIFIABLE_STUDENTS_BY_TEACHER_EMAIL = `
 module.exports = {
     INSERT_TEACHER,
     INSERT_STUDENT,
+    INSERT_STUDENTS_BULK,
     INSERT_TEACHER_STUDENT_MAP,
+    INSERT_TEACHER_STUDENT_MAP_BULK,
     GET_STUDENT_ID_BY_EMAIL,
     GET_TEACHERS_ID_BY_EMAILS,
     GET_COMMON_STUDENTS_BY_TEACHER_EMAILS,
