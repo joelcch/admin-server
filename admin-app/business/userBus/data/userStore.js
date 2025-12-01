@@ -2,7 +2,6 @@ const {
     INSERT_TEACHER,
     INSERT_STUDENT,
     INSERT_TEACHER_STUDENT_MAP,
-    GET_TEACHER_ID_BY_EMAIL,
     GET_STUDENT_ID_BY_EMAIL,
     GET_COMMON_STUDENTS_BY_TEACHER_EMAILS,
     SUSPEND_STUDENT_BY_EMAIL,
@@ -77,23 +76,6 @@ const userStore = (dbConnection) => {
 
     // Get the ID of a teacher by email
     // Returns null if the teacher does not exist
-    const getTeacherIdByEmail = async (email) => {
-        try {
-            const [rows] = await db.query(GET_TEACHER_ID_BY_EMAIL, [email]);
-            if (rows.length === 0) {
-            return null;
-        }
-        return rows[0].id;
-        } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
-        }
-    }
-
-    // Get the ID of a teacher by email
-    // Returns null if the teacher does not exist
     const getStudentIdByEmail = async (email) => {
         try {
             const [rows] = await db.query(GET_STUDENT_ID_BY_EMAIL, [email]);
@@ -110,9 +92,9 @@ const userStore = (dbConnection) => {
     }
 
     // Get list of students common to given teachers
-    const getCommonStudentsByTeacherIds = async (teacherIds) => {
+    const getCommonStudentsByTeacherEmails = async (teacherEmails) => {
         try {
-            const [rows] = await db.query(GET_COMMON_STUDENTS_BY_TEACHER_EMAILS, [teacherIds, teacherIds.length]);
+            const [rows] = await db.query(GET_COMMON_STUDENTS_BY_TEACHER_EMAILS, [teacherEmails, teacherEmails.length]);
             return rows.map(row => row.student_email);    
         } catch (err) {
             if (err.code ==='ER_ACCESS_DENIED_ERROR') {
@@ -149,7 +131,7 @@ const userStore = (dbConnection) => {
     }
 
     // Get teacher ID by emails
-    const getTeacherIdsByEmails = async (emails) => {
+    const getTeachersByEmails = async (emails) => {
         try {
             const [rows] = await db.query(GET_TEACHERS_ID_BY_EMAILS, [emails]);
             return rows;
@@ -164,13 +146,12 @@ const userStore = (dbConnection) => {
     return {
         registerTeacher,
         registerStudent,
-        getTeacherIdByEmail,
-        getStudentIdByEmail,
         assignStudentToTeacher,
-        getCommonStudentsByTeacherIds,
+        getStudentIdByEmail,
+        getCommonStudentsByTeacherEmails,
         suspendStudentByEmail,
         getNotifiableStudentsByTeacherEmailAndMentions,
-        getTeacherIdsByEmails,
+        getTeachersByEmails,
     }
 }
 

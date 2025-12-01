@@ -2,57 +2,18 @@ const { DuplicateUserError, UserDoesNotExistError, AuthenticationError } = requi
 const { DuplicateEntryError, InvalidCredentialsError } = require('./data/errors');
 
 const userBus = (store) => {
-    const userStore = store;
-
-    const registerTeacher = async (email) => {
-        try {
-            await userStore.registerTeacher(email);
-        } catch (err) {
-            if (err instanceof DuplicateEntryError) {
-                throw new DuplicateUserError();
-            }
-            if (err instanceof InvalidCredentialsError) {
-                throw new AuthenticationError();
-            }
-            throw err;
-        }
-    }
-
-    const registerStudent = async (email) => {
-        try {
-            await userStore.registerStudent(email);
-        } catch (err) {
-            if (err instanceof DuplicateEntryError) {
-                throw new DuplicateUserError();
-            }
-            if (err instanceof InvalidCredentialsError) {
-                throw new AuthenticationError();
-            }
-            throw err;
-        }
-    }
-
-    const getTeacherIdByEmail = async (email) => {
-        try {
-            return await userStore.getTeacherIdByEmail(email);
-        } catch (err) {
-            if (err instanceof InvalidCredentialsError) {
-                throw new AuthenticationError();
-            }
-            throw err;
-        }
-    }
-
-    const registerTeacherStudentMap = async (teacherEmail, studentEmails) => {
+        const userStore = store;
+    
+        const registerTeacherStudentMap = async (teacherEmail, studentEmails) => {
         // Try to register the teacher, if duplicate means teacher already exists
         try {
             await userStore.registerTeacher(teacherEmail);
         } catch (err) {
-            if (!(err instanceof DuplicateEntryError)) {
-                throw err;
-            }
             if (err instanceof InvalidCredentialsError) {
                 throw new AuthenticationError();
+            }
+            if (!(err instanceof DuplicateEntryError)) {
+                throw err;
             }
         }
 
@@ -61,11 +22,11 @@ const userBus = (store) => {
             try {
                 await userStore.registerStudent(studentEmail);
             } catch (err) {
-                if (!(err instanceof DuplicateEntryError)) {
-                    throw err;
-                }
                 if (err instanceof InvalidCredentialsError) {
                     throw new AuthenticationError();
+                }
+                if (!(err instanceof DuplicateEntryError)) {
+                    throw err;
                 }
             }
             
@@ -73,11 +34,11 @@ const userBus = (store) => {
             try {
                 await userStore.assignStudentToTeacher(teacherEmail, studentEmail);
             } catch (err) {
-                if (!(err instanceof DuplicateEntryError)) {
-                    throw err;
-                }
                 if (err instanceof InvalidCredentialsError) {
                     throw new AuthenticationError();
+                }
+                if (!(err instanceof DuplicateEntryError)) {
+                    throw err;
                 }
             }
         });
@@ -88,19 +49,21 @@ const userBus = (store) => {
     const getCommonStudentsFromTeachers = async (teacherEmails) => {
         let invalidEmails = [];
         try {
-            const teacherRecords = await userStore.getTeacherIdsByEmails(teacherEmails);
-            const existingEmails = teacherRecords.map(record => record.email);
+            const teacherRecords = await userStore.getTeachersByEmails(teacherEmails);
+            const existingEmails = new Set(teacherRecords.map(record => record.email));
 
             // Identify invalid emails
-            for (const email of teacherEmails) {
-                if (!existingEmails.includes(email)) {
+            teacherEmails.forEach(email => {
+                if (!existingEmails.has(email)) {
                     invalidEmails.push(email);
                 }
-            }
+            });
+
             if (invalidEmails.length > 0) {
                 throw new UserDoesNotExistError(`1 or more teachers do not exist.`, invalidEmails);
             }
-            return await userStore.getCommonStudentsByTeacherIds(teacherEmails);
+
+            return await userStore.getCommonStudentsByTeacherEmails(teacherEmails);
         } catch (err) {
             if (err instanceof InvalidCredentialsError) {
                 throw new AuthenticationError();
@@ -140,9 +103,6 @@ const userBus = (store) => {
     }
 
     return {
-        registerTeacher,
-        registerStudent,
-        getTeacherIdByEmail,
         registerTeacherStudentMap,
         getCommonStudentsFromTeachers,
         suspendStudent,
