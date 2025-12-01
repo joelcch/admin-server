@@ -31,10 +31,11 @@ const validateRegisterRequest = (req) => {
 }
 
 const validateCommonStudentsRequest = (req) => {
-    const teacherEmails = [].concat(req.query.teacher);
-    if (!teacherEmails) {
+    if (!req.query.teacher) {
         throw new InvalidRequestBodyError('at least one teacher email is required');
     }
+    
+    const teacherEmails = [].concat(req.query.teacher);
 
     // Validate emails
     let invalidTeacherEmails = [];

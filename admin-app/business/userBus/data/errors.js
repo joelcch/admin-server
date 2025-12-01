@@ -21,6 +21,16 @@ class InvalidCredentialsError extends StoreError {
     }
 }
 
+const handleDbError = (err) => {
+    if (err.code === 'ER_DUP_ENTRY') {
+        throw new DuplicateEntryError();
+    }
+    if (err.code === 'ER_ACCESS_DENIED_ERROR') {
+        throw new InvalidCredentialsError();
+    }
+    throw err;
+};
+
 module.exports = {
     StoreError,
     DuplicateEntryError,

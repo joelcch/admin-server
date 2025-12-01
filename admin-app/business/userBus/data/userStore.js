@@ -16,23 +16,23 @@ const { DuplicateEntryError, InvalidCredentialsError } = require('./errors');
 const userStore = (dbConnection) => {
     const db = dbConnection;
 
+    const handleDbError = (err) => {
+        if (err.code === 'ER_DUP_ENTRY') {
+            throw new DuplicateEntryError();
+        }
+        if (err.code === 'ER_ACCESS_DENIED_ERROR') {
+            throw new InvalidCredentialsError();
+        }
+        throw err;
+    };
+
     // Adds a new teacher to the database
     // Throws DuplicateEntryError if the teacher already exists
     const registerTeacher = async (email) => {
         try {
-            await db.query(INSERT_TEACHER, [email], (err, resp) => {
-                if (err) {
-                    throw err;
-                }
-            });
+            await db.query(INSERT_TEACHER, [email]);
         } catch (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                throw new DuplicateEntryError();
-            }
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -40,19 +40,9 @@ const userStore = (dbConnection) => {
     // Throws DuplicateEntryError if the student already exists
     const registerStudent = async (email) => {
         try {
-            await db.query(INSERT_STUDENT, [email], (err, resp) => {
-                if (err) {
-                    throw err;
-                }
-            });
+            await db.query(INSERT_STUDENT, [email]);
         } catch (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                throw new DuplicateEntryError();
-            }
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -60,19 +50,9 @@ const userStore = (dbConnection) => {
     // Throws DuplicateEntryError if the assignment already exists
     const assignStudentToTeacher = async (teacherEmail, studentEmail) => {
         try {
-            await db.query(INSERT_TEACHER_STUDENT_MAP, [teacherEmail, studentEmail], (err, resp) => {
-                if (err) {
-                    throw err;
-                }
-            });
+            await db.query(INSERT_TEACHER_STUDENT_MAP, [teacherEmail, studentEmail]);
         } catch (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                throw new DuplicateEntryError();
-            }
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -81,10 +61,7 @@ const userStore = (dbConnection) => {
         try {
             await db.query(INSERT_STUDENTS_BULK, [values]);
         } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -93,10 +70,7 @@ const userStore = (dbConnection) => {
         try {
             await db.query(INSERT_TEACHER_STUDENT_MAP_BULK, [values]);
         } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -107,14 +81,11 @@ const userStore = (dbConnection) => {
         try {
             const [rows] = await db.query(GET_STUDENT_ID_BY_EMAIL, [email]);
             if (rows.length === 0) {
-            return null;
-        }
-        return rows[0].id;
-        } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
+                return null;
             }
-            throw err;
+            return rows[0].id;
+        } catch (err) {
+            handleDbError(err);
         }    
     }
 
@@ -124,10 +95,7 @@ const userStore = (dbConnection) => {
             const [rows] = await db.query(GET_COMMON_STUDENTS_BY_TEACHER_EMAILS, [teacherEmails, teacherEmails.length]);
             return rows.map(row => row.student_email);    
         } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -136,10 +104,7 @@ const userStore = (dbConnection) => {
         try {
             await db.query(SUSPEND_STUDENT_BY_EMAIL, [email]);
         } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -150,10 +115,7 @@ const userStore = (dbConnection) => {
             const [rows] = await db.query(GET_NOTIFIABLE_STUDENTS_BY_TEACHER_EMAIL, [teacherEmail, studentsToQuery]);
             return rows.map(row => row.student_email);
         } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 
@@ -163,10 +125,7 @@ const userStore = (dbConnection) => {
             const [rows] = await db.query(GET_TEACHERS_ID_BY_EMAILS, [emails]);
             return rows;
         } catch (err) {
-            if (err.code ==='ER_ACCESS_DENIED_ERROR') {
-                throw new InvalidCredentialsError();
-            }
-            throw err;
+            handleDbError(err);
         }
     }
 

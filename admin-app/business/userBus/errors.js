@@ -17,7 +17,7 @@ class DuplicateUserError extends BusError {
 
 class UserDoesNotExistError extends BusError {
     constructor(message, emails) {
-        super(message || 'User with this username already exists.', 409); // 409 Conflict
+        super(message || 'User does not exist', 404); // 404 Not Found
         this.emails = emails;
     }
 }

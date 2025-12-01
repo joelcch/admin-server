@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 const express = require('express');
 const { initializeApp } = require('./app');
+const errorHandler = require('./app/userApp/errorHandler');
 
 
 // configurations for creating mysql connection
@@ -16,6 +17,7 @@ initializeApp(connection).then((appRouter) => {
     const app = express();
     app.use(express.json());
     app.use('/', appRouter);
+    app.use(errorHandler);
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

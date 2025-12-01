@@ -196,19 +196,26 @@ describe('userBus', () => {
             expectedResult: expectedStudents
         },
         {
+            desc: 'when notification mentions suspended student should not add suspended student in the response',
+            setup: () => mockStore.getNotifiableStudentsByTeacherEmailAndMentions.mockResolvedValue(['s1@example.com']),
+            mentions: ['s1@example.com', 'suspended@example.com'],
+            expectedResult: ['s1@example.com']
+        },
+        {
             desc: 'should throw AuthenticationError on InvalidCredentialsError',
             setup: () => mockStore.getNotifiableStudentsByTeacherEmailAndMentions.mockRejectedValue(new InvalidCredentialsError()),
             expectedError: AuthenticationError
         }
     ];
 
-    scenarios.forEach(({ desc, setup, expectedResult, expectedError }) => {
+    scenarios.forEach(({ desc, setup, expectedResult, expectedError, mentions: specificMentions }) => {
         it(desc, async () => {
             setup();
+            const mentionsToUse = specificMentions || mentions;
             if (expectedError) {
-                await expect(bus.getNotifiableStudents(teacherEmail, mentions)).rejects.toThrow(expectedError);
+                await expect(bus.getNotifiableStudents(teacherEmail, mentionsToUse)).rejects.toThrow(expectedError);
             } else {
-                const result = await bus.getNotifiableStudents(teacherEmail, mentions);
+                const result = await bus.getNotifiableStudents(teacherEmail, mentionsToUse);
                 expect(result).toEqual(expectedResult);
             }
         });
