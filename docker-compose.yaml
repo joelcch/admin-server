@@ -1,7 +1,7 @@
 services:
   app:
     container_name: admin_app
-    image: admin-app:1.0.0
+    image: admin-app:1.0.2
     build:
       context: ./admin-app
       dockerfile: Dockerfile

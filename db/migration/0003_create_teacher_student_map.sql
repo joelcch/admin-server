@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS teacher_student_map (,
+CREATE TABLE IF NOT EXISTS teacher_student_map (
     teacher_email VARCHAR(150) NOT NULL,
     student_email VARCHAR(150) NOT NULL,
     is_deleted BOOLEAN DEFAULT FALSE,

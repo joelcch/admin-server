@@ -90,6 +90,11 @@ const userBus = (store) => {
 
     const getNotifiableStudents = async (teacherEmail, mentionedStudents) => {
         try {
+            const teacherRecords = await userStore.getTeachersByEmails([teacherEmail]);
+            if (teacherRecords.length === 0) {
+                throw new UserDoesNotExistError('teacher does not exist');
+            }
+
             return await userStore.getNotifiableStudentsByTeacherEmailAndMentions(teacherEmail, mentionedStudents);
         } catch (err) {
             if (err instanceof InvalidCredentialsError) {

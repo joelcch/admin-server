@@ -8,4 +8,4 @@ function extractMentionedStudents(notification) {
     return mentionedStudents;
 }
 
-export { extractMentionedStudents };
+module.exports = { extractMentionedStudents };
